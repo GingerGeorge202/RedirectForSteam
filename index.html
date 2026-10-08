@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Opening Steam</title>
+<style>
+  body { margin: 0; padding: 32px 16px; background: #1b2838; color: #c7d5e0; font: 16px/1.5 Arial, sans-serif; text-align: center; }
+  a { color: #66c0f4; word-break: break-all; }
+</style>
+</head>
+<body>
+<p id="msg">Opening the listing on Steam…</p>
+<p><a id="link" hidden>Open it on Steam</a></p>
+<script>
+// The "Buy on Steam" button of the steamparser Telegram bot lands here with
+// ?u=<the Steam listing URL>. Telegram percent-encodes the "|" of
+// #buylisting|<listing>|<app>|<context>|<asset> when it opens a URL, and
+// Steam's MarketCheckHash() splits location.hash on a literal "|", so the Buy
+// dialog only opens when the browser is sent there from a page.
+// Source: steamparser deploy/buy-redirect/index.html.
+(function () {
+  var url = null;
+  try {
+    url = new URL(new URLSearchParams(location.search).get('u') || '');
+  } catch (e) {}
+
+  // Steam market listing pages only: never a redirect to anywhere else.
+  if (!url || url.protocol !== 'https:' || url.hostname !== 'steamcommunity.com' || url.pathname.indexOf('/market/listings/') !== 0) {
+    document.getElementById('msg').textContent = 'Not a Steam market link.';
+    return;
+  }
+
+  var target = url.origin + url.pathname + url.search + url.hash.replace(/%7C/gi, '|');
+  var link = document.getElementById('link');
+  link.href = target;
+  link.hidden = false;
+  location.replace(target);
+})();
+</script>
+</body>
+</html>
